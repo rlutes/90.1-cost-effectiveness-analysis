@@ -1,0 +1,49 @@
+state,abbr,current,files for base sum,base,target
+Alabama,AL,ASHRAE_2013,hvac_data_CE_2016;hvac_data_CE_2019;hvac_data_CE_2022,2013;2016;2019,2016;2019;2022
+Alaska,AK,ASHRAE_2010,hvac_data_CE_2010;hvac_data_CE_2013;hvac_data_CE_2016;hvac_data_CE_2019;hvac_data_CE_2022,2013;2016;2019,2016;2019;2022
+Arizona,AZ,ASHRAE_2007,hvac_data_CE_2010;hvac_data_CE_2013;hvac_data_CE_2016;hvac_data_CE_2019;hvac_data_CE_2022,2013;2016;2019,2016;2019;2022
+Arkansas,AR,ASHRAE_2007,hvac_data_CE_2010;hvac_data_CE_2013;hvac_data_CE_2016;hvac_data_CE_2019;hvac_data_CE_2022,2013;2016;2019,2016;2019;2022
+Colorado,CO,ASHRAE_2016,hvac_data_CE_2019;hvac_data_CE_2022,2016;2019,2019;2022
+Connecticut,CT,ASHRAE_2019,hvac_data_CE_2022,2019,2022
+Delaware,DE,ASHRAE_2016,hvac_data_CE_2019;hvac_data_CE_2022,2016;2019,2019;2022
+District of Columbia,DC,ASHRAE_2013_amm,hvac_data_CE_2016;hvac_data_CE_2019;hvac_data_CE_2022,2013;2016;2019,2016;2019;2022
+Florida,FL,ASHRAE_2019_amm,hvac_data_CE_2022,2019,2022
+Georgia,GA,ASHRAE_2013_amm,hvac_data_CE_2016;hvac_data_CE_2019;hvac_data_CE_2022,2013;2016;2019,2016;2019;2022
+Hawaii,HI,ASHRAE_2013,hvac_data_CE_2016;hvac_data_CE_2019;hvac_data_CE_2022,2013;2016;2019,2016;2019;2022
+Idaho,ID,ASHRAE_2016,hvac_data_CE_2019;hvac_data_CE_2022,2016;2019,2019;2022
+Illinois,IL,ASHRAE_2019,hvac_data_CE_2022,2019,2022
+Indiana,IN,ASHRAE_2007,hvac_data_CE_2010;hvac_data_CE_2013;hvac_data_CE_2016;hvac_data_CE_2019;hvac_data_CE_2022,2013;2016;2019,2016;2019;2022
+Iowa,IA,ASHRAE_2010,hvac_data_CE_2010;hvac_data_CE_2013;hvac_data_CE_2016;hvac_data_CE_2019;hvac_data_CE_2022,2013;2016;2019,2016;2019;2022
+Kansas,KS,ASHRAE_2010,hvac_data_CE_2010;hvac_data_CE_2013;hvac_data_CE_2016;hvac_data_CE_2019;hvac_data_CE_2022,2013;2016;2019,2016;2019;2022
+Kentucky,KY,ASHRAE_2010,hvac_data_CE_2013;hvac_data_CE_2016;hvac_data_CE_2019;hvac_data_CE_2022,2016;2019,2019;2022
+Louisiana,LA,ASHRAE_2019_amm,hvac_data_CE_2022,2019,2022
+Maine,ME,ASHRAE_2013,hvac_data_CE_2016;hvac_data_CE_2019;hvac_data_CE_2022,2013;2016;2019,2016;2019;2022
+Maryland,MD,ASHRAE_2019_amm,hvac_data_CE_2022,2019,2022
+Massachusetts,MA,ASHRAE_2016_amm,hvac_data_CE_2019;hvac_data_CE_2022,2016;2019,2019;2022
+Michigan,MI,ASHRAE_2013_amm,hvac_data_CE_2016;hvac_data_CE_2019;hvac_data_CE_2022,2013;2016;2019,2016;2019;2022
+Minnesota,MN,ASHRAE_2019_amm,hvac_data_CE_2022,2019,2022
+Mississippi,MS,ASHRAE_2010,hvac_data_CE_2010;hvac_data_CE_2013;hvac_data_CE_2016;hvac_data_CE_2019;hvac_data_CE_2022,2013;2016;2019,2016;2019;2022
+Missouri,MO,ASHRAE_2010,hvac_data_CE_2010;hvac_data_CE_2013;hvac_data_CE_2016;hvac_data_CE_2019;hvac_data_CE_2022,2013;2016;2019,2016;2019;2022
+Montana,MT,ASHRAE_2019,hvac_data_CE_2022,2019,2022
+Nebraska,NE,ASHRAE_2016,hvac_data_CE_2019;hvac_data_CE_2022,2016;2019,2019;2022
+New Hampshire,NH,ASHRAE_2016_amm,hvac_data_CE_2019;hvac_data_CE_2022,2016;2019,2019;2022
+New Jersey,NJ,ASHRAE_2019,hvac_data_CE_2022,2019,2022
+New Mexico,NM,ASHRAE_2019_amm,hvac_data_CE_2022,2019,2022
+New York,NY,ASHRAE_2016_amm,hvac_data_CE_2019;hvac_data_CE_2022,2016;2019,2019;2022
+North Carolina,NC,ASHRAE_2013_amm,hvac_data_CE_2016;hvac_data_CE_2019;hvac_data_CE_2022,2013;2016;2019,2016;2019;2022
+North Dakota,ND,ASHRAE_2010,hvac_data_CE_2010;hvac_data_CE_2013;hvac_data_CE_2016;hvac_data_CE_2019;hvac_data_CE_2022,2013;2016;2019,2016;2019;2022
+Ohio,OH,ASHRAE_2019_amm,hvac_data_CE_2022,2019,2022
+Oklahoma,OK,ASHRAE_2007,hvac_data_CE_2010;hvac_data_CE_2013;hvac_data_CE_2016;hvac_data_CE_2019;hvac_data_CE_2022,2013;2016;2019,2016;2019;2022
+Oregon,OR,ASHRAE_2019,hvac_data_CE_2022,2019,2022
+Pennsylvania,PA,ASHRAE_2016,hvac_data_CE_2019;hvac_data_CE_2022,2016;2019,2019;2022
+Rhode Island,RI,ASHRAE_2016_amm,hvac_data_CE_2019;hvac_data_CE_2022,2016;2019,2019;2022
+South Carolina,SC,ASHRAE_2007,hvac_data_CE_2010;hvac_data_CE_2013;hvac_data_CE_2016;hvac_data_CE_2019;hvac_data_CE_2022,2013;2016;2019,2016;2019;2022
+South Dakota,SD,ASHRAE_2010,hvac_data_CE_2010;hvac_data_CE_2013;hvac_data_CE_2016;hvac_data_CE_2019;hvac_data_CE_2022,2013;2016;2019,2016;2019;2022
+Tennessee,TN,ASHRAE_2010,hvac_data_CE_2013;hvac_data_CE_2016;hvac_data_CE_2019;hvac_data_CE_2022,2016;2019,2019;2022
+Texas,TX,ASHRAE_2013,hvac_data_CE_2016;hvac_data_CE_2019;hvac_data_CE_2022,2013;2016;2019,2016;2019;2022
+Utah,UT,ASHRAE_2019_amm,hvac_data_CE_2022,2019,2022
+Vermont,VT,ASHRAE_2016_amm,hvac_data_CE_2019;hvac_data_CE_2022,2016;2019,2019;2022
+Virginia,VA,ASHRAE_2019_amm,hvac_data_CE_2022,2019,2022
+West Virginia,WV,ASHRAE_2013,hvac_data_CE_2016;hvac_data_CE_2019;hvac_data_CE_2022,2013;2016;2019,2016;2019;2022
+Wisconsin,WI,ASHRAE_2013_amm,hvac_data_CE_2016;hvac_data_CE_2019;hvac_data_CE_2022,2013;2016;2019,2016;2019;2022
+Wyoming,WY,ASHRAE_2010,hvac_data_CE_2010;hvac_data_CE_2013;hvac_data_CE_2016;hvac_data_CE_2019;hvac_data_CE_2022,2013;2016;2019,2016;2019;2022
