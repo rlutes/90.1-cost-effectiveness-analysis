@@ -30,13 +30,22 @@ hvac_output_dir = 'hvac_data_CE'
 cost_output_dir = 'cost_data_CE'
 hvac_handler = Filehandler(input_dir, hvac_output_dir)
 cost_handler = Filehandler(input_dir, cost_output_dir)
+
 for i, o in hvac_handler.file_map.items():
-    worker = Hvac(i, o)
-    worker.work_main()
-    worker.store_files()
-#     # worker.replacement_cost_plot()
+    try:
+        worker = Hvac(i, o)
+        worker.work_main()
+        worker.store_files()
+        # worker.replacement_cost_plot()
+    except Exception as ex:
+        print(f'Problem parsing input file: {i} -- {ex}')
+        continue
 
 for i, o in cost_handler.file_map.items():
-    worker = Cost(i, o)
-    worker.work_main()
-    worker.store_files()
+    try:
+        worker = Cost(i, o)
+        worker.work_main()
+        worker.store_files()
+    except Exception as ex:
+        print(f'Problem parsing input file: {i} -- {ex}')
+        continue
