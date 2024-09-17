@@ -95,9 +95,7 @@ class Worker:
         options = self.states.range('A4').api.Validation.Formula1[1:]
         self.states_list = [item.value for item in self.states.range(options) if item.value is not None]
         self.current_state = self.states.range('A4').value
-        print(f'Current state: {self.current_state}')
         # states.range('A4').value = states_list[randint(0, len(states_list)-1)]
-
         self.climate_list = [item.value for item in self.states.range('F9:F60')]
         self.state_abbr_list = [item.value for item in self.states.range('B9:B60')]
         self.climate_dict = dict(zip(self.state_abbr_list, self.climate_list))
@@ -124,7 +122,6 @@ class Worker:
                 current_state_climates = self.climate_dict[current_state_abbr]
             else:
                 return {}
-        print(f'New state {state} has {current_state_climates} climate zones!')
         _range = f'I8:{data_map[current_state_climates]}160'
         for sheet_name in BUILDINGS:
             df = self.wkbk.sheets(sheet_name)
@@ -135,7 +132,6 @@ class Worker:
                 if str(j) == 'x':
                     _clean_map.append(i - 8)
             clean_map[sheet_name] = _clean_map
-            print(state, sheet_name, clean_map[sheet_name])
             measure = df[f'B8:B160'].options(pd.DataFrame, header=1).value
             df2 = df[f'I8:{data_map[current_state_climates]}160'].options(pd.DataFrame).value  # HERE IS THE DATSAFRAME TO START WITH.
             df2['Measure'] = measure.index

@@ -17,7 +17,8 @@ class Filehandler:
 
     def __post_init__(self):
         self.input_files = os.listdir(self.input_dir)
-        self.input_paths = [filepath for filepath in Path(self.input_dir).glob('**/*')]
+        self.input_paths = [filepath for filepath in Path(self.input_dir).glob('**/*.xlsm')]
+        print(self.input_paths)
         self.output_targets = ['/'.join([self.output_dir, y]) for y in ['20' + re.split(r'[-_]', f)[1] for f in self.input_files]]
         for input_path, output in zip(self.input_paths, self.output_targets):
             target = Path(output)
