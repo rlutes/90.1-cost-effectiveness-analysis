@@ -6,14 +6,18 @@ Created on Tue Dec  5 14:49:15 2023
 
 import pandas as pd
 import numpy as np
-import us
 import xlwings as xw
 
 from pathlib import Path
 STATE_SHEET = "State Inputs"
 
 
-def create_frame(original):
+def create_frame(original: pd.DataFrame) -> pd.DataFrame:
+    """
+    Create data frame based on xlsm file and with cost information.
+    :param original: DataFrame with building lighting and cost information from 'Cost Est Summary' sheet
+    :return:
+    """
     block_start_rows = [0, 50, 99, 148, 197, 246]
     frames = []
     for start_row in block_start_rows:
@@ -38,8 +42,6 @@ class Worker:
         self.states = self.wkbk.sheets[STATE_SHEET]
         options = self.states.range('A4').api.Validation.Formula1[1:]
         self.states_list = [item.value for item in self.states.range(options) if item.value is not None]
-        self.current_state = self.states.range('A4').value
-        print(f'Current state: {self.current_state}')
         self.state_abbr_list = [item.value for item in self.states.range('B9:B60')]
         self.state_df = {}
         self.output_dir = output_dir
@@ -53,11 +55,9 @@ class Worker:
         """
         try:
             self.states.range('A4').value = state
-            #current_state_abbr = us.states.lookup(state).abbr
         except (KeyError, AttributeError):
             print('Snap, we suck!')
             raise
-        print(f'New state {state}')
         df = self.wkbk.sheets('Cost Est Summary')
         df = df[f'B20:X312'].options(pd.DataFrame, index=False, header=False).value
         modified_df = create_frame(df)
@@ -65,8 +65,6 @@ class Worker:
 
     def store_files(self):
         """Output state/building info to file"""
-        # cost_path = Path(self.output_dir)
-        # cost_path.mkdir(parents=True, exist_ok=True)
         for state_name, state_df in self.state_df.items():
             state_df.to_csv(self.output_dir / f'{state_name}.csv')
 
@@ -81,9 +79,12 @@ class Worker:
             self.wkbk.save()
             self.wkbk.close()
 
-
-# output_dir = 'C:/Users/vlac284/OneDrive - PNNL/Alex-Robert-Matt-state/working_versions_2024_08_05/cost_data_CE/2010'
-# xlsm_file_path = 'C:/Users/vlac284/OneDrive - PNNL/Alex-Robert-Matt-state/working_versions_2024_08_05/901-10_State_CE_Analysis_082024.xlsm'
-# worker = Worker(xlsm_file_path, output_dir)
-# worker.work_main()
-# worker.store_files()
+if __name__ == '__main__':
+    ######################################################################
+    # Configuration of script.
+    output_dir = 'cost_data_CE/2010'
+    xlsm_file_path = 'inputs/901-10_State_CE_Analysis_082024.xlsm'
+    ######################################################################
+    worker = Worker(xlsm_file_path, output_dir)
+    worker.work_main()
+    worker.store_files()

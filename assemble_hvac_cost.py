@@ -115,46 +115,50 @@ class Worker:
         return base_df, target_df
 
 
-directory = 'hvac_data_CE'
-master_file = 'inputs/current_vs_target_master2.csv'
-output_dir = 'hvac_assembled_cost'
+if __name__ == '__main__':
+    ######################################################################
+    # Configuration of script.
+    directory = 'hvac_data_CE'
+    master_file = 'inputs/current_vs_target_master2.csv'
+    output_dir = 'hvac_assembled_cost'
+    ######################################################################
 
-mapper = create_cost_map(master_file)
-worker = Worker(output_dir)
-aggregate_df = []
-for state, info in mapper.items():
-    df_b = []
-    df_t = []
-    for building in BUILDINGS:
-        try:
-            file_name = '_'.join([state, building])
-            for target_year, base_year in zip(info['target'], info['base']):
-                input_file = '/'.join([directory, str(target_year), file_name + '.csv'])
-                print(f'Process file {input_file}')
-                b, t = worker.work_main(input_file, base_year, target_year)
-                df_b.append(b)
-                df_t.append(t)
+    mapper = create_cost_map(master_file)
+    worker = Worker(output_dir)
+    aggregate_df = []
+    for state, info in mapper.items():
+        df_b = []
+        df_t = []
+        for building in BUILDINGS:
+            try:
+                file_name = '_'.join([state, building])
+                for target_year, base_year in zip(info['target'], info['base']):
+                    input_file = '/'.join([directory, str(target_year), file_name + '.csv'])
+                    print(f'Process file {input_file}')
+                    b, t = worker.work_main(input_file, base_year, target_year)
+                    df_b.append(b)
+                    df_t.append(t)
 
-            df_base = concat_df(df_b, 'Base')
-            df_target = concat_df(df_t, 'Target')
+                df_base = concat_df(df_b, 'Base')
+                df_target = concat_df(df_t, 'Target')
 
-            out_df = df_base.join(df_target)
-            worker.store_files(out_df, file_name)
+                out_df = df_base.join(df_target)
+                worker.store_files(out_df, file_name)
 
-            # Convert index to dataframe
-            old_idx = out_df.index.to_frame()
+                # Convert index to dataframe
+                old_idx = out_df.index.to_frame()
 
-            # Insert new level at specified location
-            old_idx.insert(0, 'State', state)
-            old_idx.insert(1, 'Building', building)
+                # Insert new level at specified location
+                old_idx.insert(0, 'State', state)
+                old_idx.insert(1, 'Building', building)
 
-            # Convert back to MultiIndex
-            out_df.index = pd.MultiIndex.from_frame(old_idx)
+                # Convert back to MultiIndex
+                out_df.index = pd.MultiIndex.from_frame(old_idx)
 
-            aggregate_df.append(out_df)
-        except Exception as ex:
-            print(f'Error for state: {state} --- building: {building} -- {ex}!')
-            continue
+                aggregate_df.append(out_df)
+            except Exception as ex:
+                print(f'Error for state: {state} --- building: {building} -- {ex}!')
+                continue
 
-out_df = pd.concat(aggregate_df)
-worker.store_files(out_df, 'aggregate_hvac')
+    out_df = pd.concat(aggregate_df)
+    worker.store_files(out_df, 'aggregate_hvac')

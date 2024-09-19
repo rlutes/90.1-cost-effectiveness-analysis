@@ -1,20 +1,19 @@
-# -*- coding: utf-8 -*-
 """
+-*- coding: utf-8 -*-
 Created on Tue Dec  5 14:49:15 2023
 
 """
-# look for the comments "Alex updated"
 
 import pandas as pd
+import re
 import threading
-import numpy as np
 import us
-from random import randint
 import xlwings as xw
 import matplotlib.pyplot as plt
-import matplotlib.patches as mpatches
 import seaborn as sns
 from pathlib import Path
+from typing import Callable
+
 
 data_map = {1: 'R', 2: 'AB', 3: 'AL', 4: 'AV', 5: 'BF'}
 STATE_SHEET = "State Inputs"
@@ -30,38 +29,71 @@ BUILDINGS = [
 
 def stringify(df: pd.DataFrame) -> pd.DataFrame:
     """
-    Return df with None removed from column index
+    Coerce any non-string column headers to string.
+    :param df: DataFrame for hvac cost data
+    :return df: DataFrame for hvac cost data with columns headers coerced to strings
     """
     columns = [str(item) for item in df.columns]
     df.columns = columns
     return df
 
 
-def find_start_columns(df):
-    """Returns column indices where blocks begin"""
+def find_start_columns(df: pd.DataFrame) -> list[int]:
+    """
+    Returns column indices where column header contains key word 'Code' [start block].
+    :param df: Building HVAC data frame
+    :return:  list of start block indices for DataFrame cleanup
+    """
     return [i for i, n in enumerate(df.columns) if 'Code' in n]
 
 
-def find_end_columns(df):
-    """Returns column indicies where a block may end.
-        Note that the return may have extra elements, so long as all real end sites are included.
+def find_end_columns(df: pd.DataFrame) -> list[int]:
+    """
+    Returns column indices where column header contains 'Code' or 'Climate Zone' [end block].
+    Note that the return may have extra elements, so long as all real end sites are included.
+    :param df: Building HVAC data frame
+    :return:  list of end block indices for DataFrame cleanup
     """
     return [i for i, n in enumerate(df.columns) if 'Code' in n or 'Climate Zone' in n] + [len(df.columns)]
 
 
-def find_climate_zone_columns(df):
-    """Returns column indices where a Climate Zone label is found."""
+def find_climate_zone_columns(df: pd.DataFrame) -> list[int]:
+    """
+    Returns column indices where a Climate Zone label is found.
+    :param df: Building HVAC data frame
+    :return: list of indices where label 'Climate Zone' is found in header
+    """
     return [i for i, n in enumerate(df.columns) if 'Climate Zone' in n]
 
 
-def find_headers(df):
-    """Returns formatted headers for all columns in the original dataframe."""
+def find_headers(df: pd.DataFrame) -> list[str]:
+    """
+    Returns formatted headers for all columns in the original dataframe.
+    :param df: Building HVAC data frame
+    :return: list of formated headers for DataFrame
+    """
     headers1 = df.iloc[0, :].fillna('')
     headers2 = df.iloc[1, :].fillna('')
     return [' '.join([str(headers1.iloc[i]).strip(), str(headers2.iloc[i]).strip()]) for i in range(len(headers1))]
 
 
-def create_frame(original, block_start_func, block_end_func, climate_zone_func, header_func, header_row_count):
+def create_frame(original: pd.DataFrame,
+                 block_start_func: Callable[[pd.DataFrame], list[int]],
+                 block_end_func: Callable[[pd.DataFrame], list[int]],
+                 climate_zone_func: Callable[[pd.DataFrame], list[int]],
+                 header_func: Callable[[pd.DataFrame], list[int]],
+                 header_row_count: int) -> pd.DataFrame:
+    """
+    Create DataFrames from mapped block starts/end.
+    Concatenate individual dataFrames and sets DataFrame to use a multi-level index.
+    :param original:
+    :param block_start_func: method to find start blocks from header keyword
+    :param block_end_func: method to find end blocks from header keyword
+    :param climate_zone_func: method to find index for 'Climate Zone' keyword
+    :param header_func: method to assemble headers
+    :param header_row_count: number of rows to use for each frame
+    :return:
+    """
     measure_column = original.pop('Measure')
     original = stringify(original)
     block_start_columns = block_start_func(original)
@@ -85,6 +117,10 @@ def create_frame(original, block_start_func, block_end_func, climate_zone_func, 
 
 
 def close_event():
+    """
+    If plot is assmebled trigger method after 30 seconds to close plot.
+    :return: None
+    """
     plt.close()
 
 
@@ -92,11 +128,12 @@ class Worker:
     def __init__(self, file_path, output_dir):
         self.wkbk = xw.Book(file_path)
         self.states = self.wkbk.sheets[STATE_SHEET]
+        # Iterable of all states in drop down box in the xlsm file on "State Inputs" sheet
         options = self.states.range('A4').api.Validation.Formula1[1:]
         self.states_list = [item.value for item in self.states.range(options) if item.value is not None]
         self.current_state = self.states.range('A4').value
-        # states.range('A4').value = states_list[randint(0, len(states_list)-1)]
         self.climate_list = [item.value for item in self.states.range('F9:F60')]
+        # Iterable of all states abbreviations used in xlsm file
         self.state_abbr_list = [item.value for item in self.states.range('B9:B60')]
         self.climate_dict = dict(zip(self.state_abbr_list, self.climate_list))
         self.state_df = {}
@@ -147,18 +184,20 @@ class Worker:
         return dfs
 
     def store_files(self):
-        """Output state/building info to file"""
-        # dir_path = Path(self.output_dir)
-        # dir_path.mkdir(parents=True, exist_ok=True)
+        """
+        Output state/building hvac info to file.
+        :return: None
+        """
+        dir_path = Path(self.output_dir)
+        dir_path.mkdir(parents=True, exist_ok=True)
         for state_name, state_dict in self.state_df.items():
             for building_name, data in state_dict.items():
                 data.to_csv(self.output_dir / f'{state_name}_{building_name}.csv')
 
     def replacement_cost_plot(self):
         """
-        Create heat map for all replacement costs
-        :param self:
-        :return:
+        Create heat map for all replacement costs for hvac building information.
+        :return: None
         """
         plotter = pd.DataFrame(index=list(list(self.state_df.values())[0].keys()))
         for state, state_dict in self.state_df.items():
@@ -171,10 +210,14 @@ class Worker:
 
                 plotter.loc[df.index, df.columns] = df
         sns.heatmap(plotter, cmap='bwr', xticklabels=True, yticklabels=True)
-        #threading.Timer(5.0, close_event).start()
+        threading.Timer(15, close_event).start()
         plt.show()
 
     def work_main(self):
+        """
+        Iterate through each state in list from xlsm file dr
+        :return:
+        """
         try:
             for state in self.states_list:
                 try:
@@ -186,13 +229,13 @@ class Worker:
             self.wkbk.save()
             self.wkbk.close()
 
-
-# #xlsm_file_path = 'C:/Users/lute362/OneDrive - PNNL/Alex-Robert-Matt-state/901-19_State_CE_Analysis_2021-05-26_EPv010_copy.xlsm'
-# # Alex updated
-# output_dir = 'C:/Users/vlac284/OneDrive - PNNL/Alex-Robert-Matt-state/working_versions_2024_08_05/hvac_data_CE/2019'
-# xlsm_file_path = 'C:/Users/vlac284/OneDrive - PNNL/Alex-Robert-Matt-state/working_versions_2024_08_05/901-19_State_CE_Analysis_082024.xlsm'
-#
-# worker = Worker(xlsm_file_path, output_dir)
-# worker.work_main()
-# worker.store_files()
-# worker.replacement_cost_plot()
+if __name__ == '__main__':
+    ######################################################################
+    # Configuration of script.
+    xlsm_file_path = 'inputs/901-10_State_CE_Analysis_082024.xlsm'
+    output_dir = 'hvac_data_CE'
+    ######################################################################
+    worker = Worker(xlsm_file_path, output_dir)
+    worker.work_main()
+    worker.store_files()
+    worker.replacement_cost_plot()
