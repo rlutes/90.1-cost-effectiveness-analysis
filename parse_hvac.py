@@ -81,12 +81,12 @@ def create_frame(original: pd.DataFrame,
                  block_start_func: Callable[[pd.DataFrame], list[int]],
                  block_end_func: Callable[[pd.DataFrame], list[int]],
                  climate_zone_func: Callable[[pd.DataFrame], list[int]],
-                 header_func: Callable[[pd.DataFrame], list[int]],
+                 header_func: Callable[[pd.DataFrame], list[str]],
                  header_row_count: int) -> pd.DataFrame:
     """
     Create DataFrames from mapped block starts/end.
     Concatenate individual dataFrames and sets DataFrame to use a multi-level index.
-    :param original:
+    :param original: DataFrame to process.
     :param block_start_func: method to find start blocks from header keyword
     :param block_end_func: method to find end blocks from header keyword
     :param climate_zone_func: method to find index for 'Climate Zone' keyword
@@ -199,6 +199,8 @@ class Worker:
         Create heat map for all replacement costs for hvac building information.
         :return: None
         """
+        # We don't need to catch exceptions here as if it fails the files have already
+        # been processed and stored.
         plotter = pd.DataFrame(index=list(list(self.state_df.values())[0].keys()))
         for state, state_dict in self.state_df.items():
             for building_name, data in state_dict.items():

@@ -25,9 +25,9 @@ def concat_df(df_concat: list[pd.DataFrame], token: str) -> pd.DataFrame:
     """
     Join list of DataFrames, clean up column headers by stripping extra white space,
     and aggregate with and group by Measure, Climate Zone.
-    :param df_concat: list of
-    :param token:
-    :return:
+    :param df_concat: list of DataFrame objects to join
+    :param token: 'Target' or 'Base' to apply to output file header columns for target and base code
+    :return: Concatenated DataFrame from aggregate cost analysis
     """
     df = pd.concat(df_concat)
     df.rename(columns=lambda x: x.strip(), inplace=True)
@@ -43,17 +43,15 @@ def concat_df(df_concat: list[pd.DataFrame], token: str) -> pd.DataFrame:
 
 
 
-def filter_df(df: pd.DataFrame, year: int):
+def filter_df(df: pd.DataFrame, year: int) -> pd.DataFrame:
     """
     Filter Dataframe by desired year, set DataFrame multi-index to
     Measure, Climate Zone, and Year, and drop all NaN entries.
-    :param df:
-    :param year:
-    :return:
+    :param df: DataFrame to filter by year and set_index
+    :param year: code year to apply filter.
+    :return: Filtered dataframe
     """
     df = df[df.Year == year]
-    # replacment_life = df.groupby("Measure").last()
-    # df = df.drop('Measure', axis=1)
     df.set_index(['Measure', 'Climate Zone', 'Year'], inplace=True)
     df = df.fillna(0)
     return df
@@ -63,7 +61,7 @@ def create_cost_map(file_name: str) -> dict[str, dict[str, list[int]]]:
     """
     Create mapper from input file.
     :param file_name: file with base/target mapping
-    :return:
+    :return: mapper to target and base code for each state used to process and create cost analysis
     """
     mapper = {}
     with open(file_name, 'r') as csvfile:

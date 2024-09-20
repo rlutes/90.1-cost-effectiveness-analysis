@@ -8,6 +8,10 @@ from parse_cost import Worker as Cost
 
 @dataclass
 class Filehandler:
+    """
+    Reads input files and creates file map.  Handles creation of output directory and creation
+    of output file path map.
+    """
     input_dir: str
     output_dir: str
     input_files: list = field(default_factory=lambda: [])
@@ -32,7 +36,8 @@ if __name__ == '__main__':
     cost_output_dir = 'cost_data_CE'
     hvac_handler = Filehandler(input_dir, hvac_output_dir)
     cost_handler = Filehandler(input_dir, cost_output_dir)
-
+    # Run loops for the parser methods.  Creates all needed input files for the HVAC cost and
+    # lighting/envelope cost extraction.
     for i, o in hvac_handler.file_map.items():
         try:
             print(f'Processing file {i} for HVAC costs store results in {o}')
