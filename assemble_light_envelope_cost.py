@@ -9,6 +9,7 @@ import pandas as pd
 from copy import copy
 import csv
 from pathlib import Path
+import os
 pd.set_option('display.max_columns', None)
 pd.set_option('display.max_rows', None)
 
@@ -31,23 +32,28 @@ def filter_df(df: pd.DataFrame, state: str, _year) -> pd.DataFrame:
     return df
 
 
-def create_cost_map(filename: str) -> dict:
+def create_cost_map(file_path: str) -> dict[str, list[int]]:
     """
-    Create mapper from input file.
-    :param filename: file with base/target mapping
-    :return:
+    Create a mapping from the input file.
+    :param file_path: file with state/target mapping
+    :return: Dictionary mapping state to target costs
     """
-    mapper = {}
-    with open(filename, 'r') as csvfile:
-        datareader = csv.DictReader(csvfile)
-        for obj in datareader:
-            if ';' in obj['target']:
-                target = [int(item) for item in obj['target'].split(';')]
 
-            else:
-                target = [int(obj['target'])]
-            mapper[obj['state']] = target
-    return mapper
+    def parse_target(target_str: str) -> list:
+        """Parse the target string into a list of integers."""
+        if ';' in target_str:
+            return [int(item) for item in target_str.split(';')]
+        return [int(target_str)]
+
+    cost_mapper = {}
+    with open(file_path, 'r') as csv_file:
+        data_reader = csv.DictReader(csv_file)
+        for record in data_reader:
+            state = record['state']
+            target = parse_target(record['target'])
+            cost_mapper[state] = target
+
+    return cost_mapper
 
 def store_files(df: pd.DataFrame, output_dir: str, filename: str):
     """
@@ -75,38 +81,45 @@ def assemble(filename: str, state: str, yr: int) -> pd.DataFrame:
     return target_df
 
 
-if __name__ == '__main__':
-    ######################################################################
+def main():
+    """
+    Configures script parameters and executes the main processing steps, including creating a cost map and processing state data. Catches and prints exceptions that occur during execution.
+    :return: None
+    """
     # Configuration of script.
+    input_directory = 'cost_data_CE'
+    master_file_path = 'inputs/current_vs_target_master_exclude_CE_2010.csv'
+    output_directory = 'light_envelope_assembled_cost'
+    output_filename = 'light_envelope_cost'
 
-    # Input directory
-    directory = 'cost_data_CE'
+    try:
+        mapper = create_cost_map(master_file_path)
+        process_states(mapper, input_directory, output_directory, output_filename)
+    except Exception as ex:
+        print(f'An exception occured when constructing year mapping: {ex}')
 
-    # File that specifies the base, target years for analysis
-    master_file = 'inputs/current_vs_target_master_exclude_CE_2010.csv'
 
-    # Output directory, will create if it does not exist
-    output_dir = 'light_envelope_assembled_cost'
-
-    # Output file name, will have extension .csv
-    output_file = 'light_envelope_cost'
-    ######################################################################
-    mapper = create_cost_map(master_file)
-    final_df = []
-    for state, info in mapper.items():
+def process_states(mapper, input_directory, output_directory, output_filename):
+    final_dataframes = []
+    for state, years in mapper.items():
         try:
-            df_t = []
-            for _year in info:
-                input_file = '/'.join([directory, str(_year), state + '.csv'])
-                print(f'Process file {input_file}')
-                t = assemble(input_file, state, _year)
-                df_t.append(t)
-            df_target = pd.concat(df_t)
-            final_df.append(df_target)
-        except Exception as ex:
-            print(f'Problem for {state} -- {ex}')
+            yearly_dataframes = [
+                assemble(os.path.join(input_directory, str(year), f'{state}.csv'), state, year) for
+                                 year in years]
+            state_dataframe = pd.concat(yearly_dataframes)
+            final_dataframes.append(state_dataframe)
+        except Exception as e:
+            print(f'Problem for {state} -- {e}')
+            continue
 
-    out_df = pd.concat(final_df)
-    out_df = pd.pivot_table(out_df, index=['State', 'Building', 'CodeYear', 'DeviceType', 'Year'], columns='ClimateZone', values='Cost')
-    store_files(out_df, output_dir, output_file)
+    combined_dataframe = pd.concat(final_dataframes)
+    pivoted_dataframe = pd.pivot_table(combined_dataframe,
+                                       index=['State', 'Building', 'CodeYear', 'DeviceType', 'Year'],
+                                       columns='ClimateZone',
+                                       values='Cost')
+    store_files(pivoted_dataframe, output_directory, output_filename)
+
+
+if __name__ == '__main__':
+    main()
 
