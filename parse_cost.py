@@ -10,30 +10,75 @@ import xlwings as xw
 
 from pathlib import Path
 STATE_SHEET = "State Inputs"
+BLOCK_START_ROWS = [0, 50, 99, 148, 197, 246]
+
+
+def get_year_range() -> np.ndarray:
+    """
+    :return: A numpy array of integers ranging from -1 to 41 (inclusive) with 43 evenly spaced elements.
+    """
+    return np.linspace(-1, 41, 43).astype(int)
+
+
+def extract_cost_info(original: pd.DataFrame, start_row: int, cz_column: int) -> list[float]:
+    """
+    :param original: The input DataFrame from which cost information is extracted.
+    :param start_row: The starting row index from where the extraction begins.
+    :param cz_column: The column index which contains the cost information.
+    :return: A list of extracted cost information from the specified rows and column.
+    """
+    return (
+            [original.iloc[start_row + 3, cz_column]] +
+            [original.iloc[start_row + 2, cz_column]] +
+            list(original.iloc[start_row + 5:start_row + 45, cz_column]) +
+            [original.iloc[start_row + 46, cz_column]]
+    )
+
+
+def process_device_type(original: pd.DataFrame, building: str,
+                        year_range: np.ndarray, start_row: int,
+                        dev_start: int, device_type: str) -> list[pd.DataFrame]:
+    """
+    :param original: DataFrame containing the original data from which information is to be extracted.
+    :param building: String representing the building identifier or name.
+    :param year_range: NumPy array representing the range of years for which data is to be processed.
+    :param start_row: Integer indicating the starting row in the original DataFrame for data extraction.
+    :param dev_start: Integer indicating the starting column index for device type information.
+    :param device_type: String representing the type of device for which cost information is to be processed.
+    :return: List of DataFrames, each containing processed cost information categorized by building, year, climate zone, and device type.
+    """
+    frames = []
+    for x in range(0, 5):
+        cz_column = dev_start + x
+        climate_zone = str(original.iloc[start_row + 1, cz_column]).strip()
+        if climate_zone != '0.0':
+            cost_info = extract_cost_info(original, start_row, cz_column)
+            frame = pd.DataFrame({
+                'Building': building,
+                'Year': year_range,
+                'ClimateZone': climate_zone,
+                'DeviceType': device_type,
+                'Cost': cost_info
+            })
+            frames.append(frame)
+    return frames
 
 
 def create_frame(original: pd.DataFrame) -> pd.DataFrame:
     """
-    Create data frame based on xlsm file and with cost information.
-    :param original: DataFrame with building lighting and cost information from 'Cost Est Summary' sheet
-    :return:
+    :param original: The original DataFrame containing building data.
+    :return: A new DataFrame with the processed device type data, where the index is set to 'Building', 'Year', 'DeviceType', and 'ClimateZone'.
     """
-    block_start_rows = [0, 50, 99, 148, 197, 246]
-    frames = []
-    for start_row in block_start_rows:
+    frame_list = []
+    year_range = get_year_range()
+    for start_row in BLOCK_START_ROWS:
         building = original.iloc[start_row, 0]
-        year =  np.linspace(-1, 41, 43).astype(int)
         for dev_start, device_type in zip([1, 6, 13, 18], ['HVAC', 'Lighting', 'Envelope', 'Total']):
-            for x in range(0, 5):
-                cz_column = dev_start + x
-                cz = str(original.iloc[start_row+1, cz_column]).strip()
-                if cz != '0.0':
-                    cost = [original.iloc[start_row+3, cz_column]] + [original.iloc[start_row+2, cz_column]] + list(original.iloc[start_row+5:start_row+45, cz_column]) + [original.iloc[start_row+46, cz_column]]
-                    frame = pd.DataFrame({'Building': building, 'Year': year, 'ClimateZone': cz, 'DeviceType': device_type, 'Cost': cost})
-                    frames.append(frame)
-    new_frame = pd.concat(frames, axis=0)
+            frame_list.extend(process_device_type(original, building, year_range, start_row, dev_start, device_type))
+    new_frame = pd.concat(frame_list, axis=0)
     new_frame.set_index(['Building', 'Year', 'DeviceType', 'ClimateZone'], inplace=True)
     return new_frame
+
 
 
 class Worker:
@@ -79,12 +124,22 @@ class Worker:
             self.wkbk.save()
             self.wkbk.close()
 
+
+######################################################################
+# Configuration of script.
+OUTPUT_DIRECTORY = 'cost_data_CE/2010'
+XLSM_FILE_PATH = 'inputs/901-10_State_CE_Analysis_082024.xlsm'
+######################################################################
+
+def configure_script(output_dir, file_path):
+    output_path = Path(output_dir)
+    output_path.mkdir(parents=True, exist_ok=True)
+    return file_path, output_path
+
+
 if __name__ == '__main__':
-    ######################################################################
-    # Configuration of script.
-    output_dir = 'cost_data_CE/2010'
-    xlsm_file_path = 'inputs/901-10_State_CE_Analysis_082024.xlsm'
-    ######################################################################
-    worker = Worker(xlsm_file_path, output_dir)
+    xlsm_file, output_directory = configure_script(OUTPUT_DIRECTORY, XLSM_FILE_PATH)
+
+    worker = Worker(xlsm_file, output_directory)
     worker.work_main()
     worker.store_files()

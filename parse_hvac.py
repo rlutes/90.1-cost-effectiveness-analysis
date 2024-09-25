@@ -5,7 +5,6 @@ Created on Tue Dec  5 14:49:15 2023
 """
 
 import pandas as pd
-import re
 import threading
 import us
 import xlwings as xw
