@@ -31,10 +31,13 @@ def concat_df(df_concat: list[pd.DataFrame], token: str) -> pd.DataFrame:
     """
     df = pd.concat(df_concat)
     df.rename(columns=lambda x: x.strip(), inplace=True)
+    for col in df.columns:
+        df[col] = pd.to_numeric(df[col], errors='coerce')
     # Assumes that all Replacement Life values are the same for each group
     replacement_life = df.pop('Replacement Life').groupby(level=[0, 1]).last()
     # Sum HVAC costs by group
     df = df.groupby(level=[0, 1]).sum()
+
     df['Replacement Life'] = replacement_life
     # Remove extra white space from column headers
     rename = {item: token.strip() + ': ' + item.strip() for item in df.columns}
@@ -118,7 +121,7 @@ def main():
     ######################################################################
     # Configuration of script.
     input_directory = 'hvac_data_CE'
-    master_file = 'inputs/current_vs_target_master2.csv'
+    master_file = 'inputs/current_vs_target_master_exclude_CE_2010.csv'
     output_directory = 'hvac_assembled_cost'
     ######################################################################
 
