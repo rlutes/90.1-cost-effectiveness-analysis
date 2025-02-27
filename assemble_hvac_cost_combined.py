@@ -90,7 +90,7 @@ class Worker:
     def __init__(self, output_dir):
         self.output_dir = output_dir
 
-    def store_files(self, df: pd.DataFrame, filename: str):
+    def store_files(self, df: pd.DataFrame | list, filename: str, aggregate: bool = False,):
         """
         Output state/building info to file
         :param df: aggregate DF to output for HVAC cost.
@@ -99,8 +99,13 @@ class Worker:
         """
         cost_path = Path(self.output_dir)
         cost_path.mkdir(parents=True, exist_ok=True)
-        # for state_name, state_df in self.state_df.items():
-        df.to_csv(cost_path / f'{filename}.csv')
+        mode='w'
+        if not aggregate:
+            df.to_csv(cost_path / f'{filename}.csv')
+        if aggregate:
+            for ag in df:
+                ag.to_csv(cost_path / f'{filename}.csv', mode=mode, header=False)
+                mode='a'
 
     @staticmethod
     def work_main(filename: str, base: int, target: int) -> tuple[pd.DataFrame, pd.DataFrame]:
@@ -144,10 +149,18 @@ def main():
 
     def update_dataframe_index(out_df, state, building):
         old_index = out_df.index.to_frame()
+
         old_index.insert(0, 'State', state)
         old_index.insert(1, 'Building', building)
         out_df.index = pd.MultiIndex.from_frame(old_index)
-        return out_df
+        unique_level_values = out_df.index.get_level_values('Climate Zone').unique()
+        lst = []
+        for climate in unique_level_values:
+            stacked_df = out_df.xs(climate, level='Climate Zone')
+            stacked_df.insert(0, column = 'Climate Zone', value=climate)
+            lst.append(stacked_df)
+        stacked_df = pd.concat(lst, axis=1)
+        return stacked_df
 
     for state, info in mapper.items():
         for building in BUILDINGS:
@@ -160,8 +173,11 @@ def main():
                 print(f'Error for state: {state} --- building: {building} -- {ex}!')
                 continue
 
-    final_aggregate_df = pd.concat(aggregate_df)
-    worker.store_files(final_aggregate_df, 'aggregate_hvac')
+
+    # final_aggregate_df = pd.concat(aggregate_df, ignore_index=True)
+    worker.store_files(aggregate_df, 'aggregate_hvac', aggregate=True)
+
+
 
 
 if __name__ == '__main__':
